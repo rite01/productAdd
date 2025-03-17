@@ -9,15 +9,8 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import {
-  DragIndicator,
-  Edit,
-  ExpandLess,
-  ExpandMore,
-  Close,
-} from "@mui/icons-material";
+import { Edit, ExpandLess, ExpandMore, Close } from "@mui/icons-material";
 import ProductSelector from "./productDilog";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 const App = () => {
   const [input, setInput] = useState([{ id: 1, selectedProducts: [] }]);
@@ -72,22 +65,6 @@ const App = () => {
     );
   };
 
-  const handleDragEnd = (result, productId) => {
-    if (!result.destination) return;
-
-    setInput((prev) =>
-      prev.map((product) => {
-        if (product.id === productId) {
-          const updatedVariants = [...product.selectedProducts];
-          const [movedItem] = updatedVariants.splice(result.source.index, 1);
-          updatedVariants.splice(result.destination.index, 0, movedItem);
-          return { ...product, selectedProducts: updatedVariants };
-        }
-        return product;
-      })
-    );
-  };
-
   const handleDiscount = (productId) => {
     setManageDiscount((prev) => ({
       ...prev,
@@ -109,9 +86,6 @@ const App = () => {
           }}
         >
           <Grid container alignItems="center" spacing={2}>
-            <Grid item>
-              <DragIndicator sx={{ color: "gray", cursor: "grab" }} />
-            </Grid>
             <Grid item>
               <Typography>{index + 1}.</Typography>
             </Grid>
@@ -162,7 +136,6 @@ const App = () => {
                   variant="contained"
                   color="success"
                   onClick={() => handleDiscount(product.id)}
-                  sx={{ display: "flex", alignItems: "center" }}
                 >
                   Add Discount
                 </Button>
@@ -190,66 +163,32 @@ const App = () => {
                   {showVariants[product.id] ? "Hide Variants" : "Show Variants"}
                 </Typography>
               </Box>
-
               {showVariants[product.id] && (
-                <DragDropContext
-                  onDragEnd={(result) => handleDragEnd(result, product.id)}
-                >
-                  <Droppable droppableId={`droppable-${product.id}`}>
-                    {(provided) => (
-                      <Box
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        sx={{ mt: 2 }}
+                <Box sx={{ mt: 2 }}>
+                  {product.selectedProducts.map((item) => (
+                    <Box
+                      key={item.id}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1,
+                        mt: 1,
+                        borderRadius: 5,
+                        backgroundColor: "#f2f2f2",
+                      }}
+                    >
+                      <Typography sx={{ flexGrow: 1 }}>
+                        {`${item.parentTitle} - ${item.title}`}
+                      </Typography>
+                      <IconButton
+                        onClick={() => handleRemoveVariant(product.id, item.id)}
+                        size="small"
                       >
-                        {product.selectedProducts.map((item, index) => (
-                          <Draggable
-                            key={item.id}
-                            draggableId={String(item.id)}
-                            index={index}
-                          >
-                            {(provided, snapshot) => (
-                              <Box
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  p: 1,
-                                  mt: 1,
-                                  borderRadius: 5,
-                                  backgroundColor: snapshot.isDragging
-                                    ? "#e0e0e0"
-                                    : "#f2f2f2",
-                                  boxShadow: snapshot.isDragging
-                                    ? "0px 2px 5px rgba(0,0,0,0.2)"
-                                    : "none",
-                                }}
-                              >
-                                <DragIndicator
-                                  sx={{ color: "gray", cursor: "grab", mr: 1 }}
-                                />
-                                <Typography sx={{ flexGrow: 1 }}>
-                                  {`${item.parentTitle} - ${item.title}`}
-                                </Typography>
-                                <IconButton
-                                  onClick={() =>
-                                    handleRemoveVariant(product.id, item.id)
-                                  }
-                                  size="small"
-                                >
-                                  <Close fontSize="small" />
-                                </IconButton>
-                              </Box>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </Box>
-                    )}
-                  </Droppable>
-                </DragDropContext>
+                        <Close fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Box>
               )}
             </Box>
           )}
